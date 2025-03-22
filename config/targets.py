@@ -6,6 +6,7 @@ Target college websites and their specific URL patterns
 TARGET_COLLEGES = [
     {
         "name": "Indian Institute of Technology Delhi",
+        "alias": ["IIT Delhi", "IITD"],
         "base_url": "https://home.iitd.ac.in/",
         "admission_paths": [
             "admissions", 
@@ -21,6 +22,7 @@ TARGET_COLLEGES = [
     },
     {
         "name": "Indian Institute of Technology Bombay",
+        "alias": ["IIT Bombay", "IITB"],
         "base_url": "https://www.iitb.ac.in/",
         "admission_paths": [
             "en/education/admissions",
@@ -36,6 +38,7 @@ TARGET_COLLEGES = [
     },
     {
         "name": "Delhi University",
+        "alias": ["DU", "University of Delhi"],
         "base_url": "http://www.du.ac.in/",
         "admission_paths": [
             "admissions",
@@ -51,6 +54,7 @@ TARGET_COLLEGES = [
     },
     {
         "name": "Vellore Institute of Technology",
+        "alias": ["VIT"],
         "base_url": "https://vit.ac.in/",
         "admission_paths": [
             "admissions",
@@ -66,6 +70,7 @@ TARGET_COLLEGES = [
     },
     {
         "name": "Birla Institute of Technology and Science, Pilani",
+        "alias": ["BITS Pilani", "BITS"],
         "base_url": "https://www.bits-pilani.ac.in/",
         "admission_paths": [
             "admissions",
@@ -78,6 +83,21 @@ TARGET_COLLEGES = [
             "careers"
         ],
         "domain": "bits-pilani.ac.in"
+    },
+    # Add your own custom college here as an example
+    {
+        "name": "mbit",
+        "alias": ["My mbit"],
+        "base_url": "https://mbit.edu.in",
+        "admission_paths": [
+            "admissions",
+            "apply"
+        ],
+        "placement_paths": [
+            "careers",
+            "jobs"
+        ],
+        "domain": "example.edu"
     }
 ]
 

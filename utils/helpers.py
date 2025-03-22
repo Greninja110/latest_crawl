@@ -465,3 +465,108 @@ def normalize_url(url: str, base_url: str = None) -> str:
     
     # Rebuild URL
     return f"{scheme}://{netloc}{parsed.path}{parsed.params}"
+
+def setup_logging(log_level: str, log_file: str = None) -> None:
+    """
+    Setup logging configuration with enhanced formatting and file output
+    
+    Args:
+        log_level: Logging level (INFO, DEBUG, etc.)
+        log_file: Optional log file path
+    """
+    import logging
+    import os
+    import sys
+    from datetime import datetime
+    
+    try:
+        import colorlog
+        has_colorlog = True
+    except ImportError:
+        has_colorlog = False
+    
+    # Convert string level to numeric
+    numeric_level = getattr(logging, log_level.upper(), None)
+    if not isinstance(numeric_level, int):
+        numeric_level = logging.INFO
+    
+    # Create logs directory if it doesn't exist and log_file is specified
+    if log_file:
+        log_dir = os.path.dirname(log_file)
+        if log_dir and not os.path.exists(log_dir):
+            os.makedirs(log_dir, exist_ok=True)
+        
+        # Add timestamp to log filename if not present
+        if not any(c in log_file for c in ['%', '{']):
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename, ext = os.path.splitext(log_file)
+            log_file = f"{filename}_{timestamp}{ext}"
+    
+    # Configure root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(numeric_level)
+    
+    # Remove existing handlers
+    for handler in root_logger.handlers[:]:
+        root_logger.removeHandler(handler)
+    
+    # Define log format
+    log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    date_format = '%Y-%m-%d %H:%M:%S'
+    
+    # Configure console handler with colors if available
+    if has_colorlog:
+        # Color mapping
+        color_formatter = colorlog.ColoredFormatter(
+            '%(log_color)s' + log_format,
+            datefmt=date_format,
+            log_colors={
+                'DEBUG': 'cyan',
+                'INFO': 'green',
+                'WARNING': 'yellow',
+                'ERROR': 'red',
+                'CRITICAL': 'red,bg_white',
+            }
+        )
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setFormatter(color_formatter)
+    else:
+        formatter = logging.Formatter(log_format, datefmt=date_format)
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setFormatter(formatter)
+    
+    root_logger.addHandler(console_handler)
+    
+    # Configure file handler if log file is specified
+    if log_file:
+        try:
+            file_formatter = logging.Formatter(log_format, datefmt=date_format)
+            file_handler = logging.FileHandler(log_file, encoding='utf-8')
+            file_handler.setFormatter(file_formatter)
+            root_logger.addHandler(file_handler)
+            
+            # Log the file location at startup
+            root_logger.info(f"Log file created at: {os.path.abspath(log_file)}")
+        except Exception as e:
+            root_logger.error(f"Failed to create log file: {e}")
+    
+    # Log initial message
+    root_logger.info(f"Logging initialized at {log_level} level")
+    
+    # Create custom logger for VS Code debug output
+    vs_logger = logging.getLogger('vscode')
+    vs_handler = logging.StreamHandler(sys.stdout)
+    vs_handler.setFormatter(logging.Formatter('%(levelname)s [VS]: %(message)s'))
+    vs_logger.addHandler(vs_handler)
+    vs_logger.setLevel(numeric_level)
+    
+    # Add logging to uncaught exceptions
+    def handle_exception(exc_type, exc_value, exc_traceback):
+        if issubclass(exc_type, KeyboardInterrupt):
+            # Let KeyboardInterrupt pass through
+            sys.__excepthook__(exc_type, exc_value, exc_traceback)
+            return
+        
+        root_logger.critical("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+    
+    sys.excepthook = handle_exception
